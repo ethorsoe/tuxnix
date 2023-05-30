@@ -16,8 +16,8 @@
           mkdir -p /mnt/persist/ssh
         fi
         [[ -f "/mnt/persist/machine-id" ]] || \
-          dd if=/dev/urandom count=1 2>/dev/null | md5sum | ${pkgs.gnused
-            }/bin/sed 's/ .*$//' > /mnt/persist/machine-id
+          dd if=/dev/urandom count=1 2>/dev/null | md5sum | \
+            ${pkgs.gnused}/bin/sed 's/ .*$//' > /mnt/persist/machine-id
       '';
       stateVersion = lib.trivial.release;
     };

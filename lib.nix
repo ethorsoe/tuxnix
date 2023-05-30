@@ -1,5 +1,7 @@
 lib:
 (lib // rec {
+  alphabet = "abcdefghijklmnopqrstuvwxyz";
+  letterOfAlphabet = x: builtins.substring x 1 alphabet;
   splitString = reg: s: builtins.filter (x: builtins.isString x && "" != x)
     (builtins.split reg s);
   lines = splitString "\n";

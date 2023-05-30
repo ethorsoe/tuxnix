@@ -56,6 +56,7 @@
     fileSystems."/mnt/pool" = {
       device = "/dev/disk/by-uuid/${config.tuxnix.fsUUID}";
       fsType = "btrfs";
+      neededForBoot = true;
       options = config.tuxnix.btrfsOpts;
     };
     fileSystems."/boot" = {
@@ -79,5 +80,9 @@
         ${pkgs.sqlite.bin}/bin/sqlite3 /mnt-root/nix/var/nix/db/db.sqlite vacuum
       '';
     };
+    system.activationScripts.clear-profiles = lib.stringAfter [ "nix" ] ''
+      find /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/profiles/per-user/ -type l -delete
+      rm -f /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/gcroots/profiles /root/.nix-channels
+    '';
   };
 }

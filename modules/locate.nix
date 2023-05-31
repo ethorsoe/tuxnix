@@ -21,7 +21,8 @@ in
         set -eu
         shopt -s nullglob
         cd ${locateDir}
-        wget -q -N https://github.com/Mic92/nix-index-database/releases/latest/download/index-x86_64-linux
+        project='https://github.com/Mic92/nix-index-database'
+        wget -q -N "$project/releases/latest/download/index-x86_64-linux"
         ln -f index-x86_64-linux files
       '';
       serviceConfig = {

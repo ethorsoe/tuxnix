@@ -24,20 +24,23 @@
             [ inplaceCopy ];
           script = ''
             set -eux
-            mkdir -p /mnt/pool/meta-backup/${name}
-            if ! [[ -f "/mnt/pool/meta-backup/${name}/backup.img" ]]; then
-              dd if="${device}" of="/mnt/pool/meta-backup/${name}/backup.img" iflag=direct oflag=direct bs=4M
-              cat "/mnt/pool/meta-backup/${name}/backup.img" | sha256sum > "/mnt/pool/meta-backup/${name}/backup.img.sha256"
+            mb="/mnt/pool/meta-backup"
+            mkdir -p "$mb/${name}"
+            if ! [[ -f "$mb/${name}/backup.img" ]]; then
+              dd if="${device}" of="$mb/${name}/backup.img" iflag=direct oflag=direct bs=4M
+              cat "$mb/${name}/backup.img" | sha256sum > "$mb/${name}/backup.img.sha256"
             fi
-            cp --reflink=always "/mnt/pool/meta-backup/${name}/backup.img" "/mnt/pool/meta-backup/${name}/new-backup.img"
-            inplace-copy "${device}" "/mnt/pool/meta-backup/${name}/new-backup.img"
-            cat "/mnt/pool/meta-backup/${name}/new-backup.img" | sha256sum > "/mnt/pool/meta-backup/${name}/new-backup.img.sha256"
-            if [[ "$(<"/mnt/pool/meta-backup/${name}/backup.img.sha256")" != "$(<"/mnt/pool/meta-backup/${name}/new-backup.img.sha256")" ]] &&
-                [[ "$(dd "if=${device}" iflag=direct bs=4M | sha256sum)" == "$(<"/mnt/pool/meta-backup/${name}/new-backup.img.sha256")" ]]; then
-              mv "/mnt/pool/meta-backup/${name}/new-backup.img.sha256" "/mnt/pool/meta-backup/${name}/backup.img.sha256"
-              mv "/mnt/pool/meta-backup/${name}/new-backup.img" "/mnt/pool/meta-backup/${name}/backup.img"
+            cp --reflink=always "$mb/${name}/backup.img" "$mb/${name}/new-backup.img"
+            inplace-copy "${device}" "$mb/${name}/new-backup.img"
+            cat "$mb/${name}/new-backup.img" | sha256sum > "$mb/${name}/new-backup.img.sha256"
+            if [[ "$(<"$mb/${name}/backup.img.sha256")" != \
+                "$(<"$mb/${name}/new-backup.img.sha256")" ]] && \
+                [[ "$(dd "if=${device}" iflag=direct bs=4M | sha256sum)" == \
+                "$(<"$mb/${name}/new-backup.img.sha256")" ]]; then
+              mv "$mb/${name}/new-backup.img.sha256" "$mb/${name}/backup.img.sha256"
+              mv "$mb/${name}/new-backup.img" "$mb/${name}/backup.img"
             else
-              rm "/mnt/pool/meta-backup/${name}/new-backup.img" "/mnt/pool/meta-backup/${name}/new-backup.img.sha256"
+              rm "$mb/${name}/new-backup.img" "$mb/${name}/new-backup.img.sha256"
             fi
           '';
           serviceConfig.Type = "oneshot";

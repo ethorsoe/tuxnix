@@ -60,16 +60,20 @@
               if builtins.isAttrs baseConfig
               then baseConfig
               else baseConfig configArgs;
-            containerAutoConfig = {
-              imports = builtins.foldl'
-                (old: mod: old ++ (tlib.resolveModule hostConfig.tuxnix.container.modulesPaths mod))
-                [ ]
-                containerConfig.modules;
-              environment.etc."machine-id".enable = false;
-              networking.hostName = name;
-            };
+            containerAutoConfig =
+              assert !(effectiveBaseConfig ? imports);
+              {
+                imports = builtins.foldl'
+                  (old: mod: old ++ (tlib.resolveModule hostConfig.tuxnix.container.modulesPaths mod))
+                  [ ]
+                  containerConfig.modules;
+                environment.etc."machine-id".enable = false;
+                networking.hostName = name;
+                # workaround no root login assertion
+                users.users."root".openssh.authorizedKeys.keys = [ "" ];
+              };
           in
-          lib.recursiveUpdate effectiveBaseConfig containerAutoConfig;
+          lib.recursiveUpdate containerAutoConfig effectiveBaseConfig;
         extraFlags =
           let
             hashedName = builtins.hashString "sha256"

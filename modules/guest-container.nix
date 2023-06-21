@@ -54,6 +54,7 @@
           ({ "/mnt/persist" = "persist"; } // params.extraMounts);
         config = { config, pkgs, lib, ... }@configArgs:
           let
+            modulesPaths = hostConfig.tuxnix.container.modulesPaths;
             containerConfig = import (hostConfig.tuxnix.container.configsDir + "/${name}.nix");
             baseConfig = containerConfig.config;
             effectiveBaseConfig =
@@ -64,7 +65,7 @@
               assert !(effectiveBaseConfig ? imports);
               {
                 imports = builtins.foldl'
-                  (old: mod: old ++ (tlib.resolveModule hostConfig.tuxnix.container.modulesPaths mod))
+                  (old: mod: old ++ (tlib.resolveModule modulesPaths mod))
                   [ ]
                   containerConfig.modules;
                 environment.etc."machine-id".enable = false;

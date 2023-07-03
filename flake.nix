@@ -20,8 +20,7 @@
             then tlib.resolveModule effectiveModulesPaths newmod
             else throw "Module type not recognized!");
           instantiationconfig = lib.optionalAttrs (inputattrs ? instantiationdata)
-            lib.importJSON
-            (inputattrs.instantiationdata + "/config.json");
+            (lib.importJSON (inputattrs.instantiationdata + "/config.json"));
         in
         nixpkgs.lib.nixosSystem ({
           inherit system;

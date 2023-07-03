@@ -40,6 +40,20 @@
                 type = lib.types.listOf lib.types.path;
               };
             }
+            {
+              options.tuxnix.update-system = {
+                selfFlakeFilePath = lib.mkOption {
+                  default = inputattrs.self + "/flake.nix";
+                  description = "Path of the flake.nix of top level flake";
+                  type = lib.types.path;
+                };
+                selfFlakePath = lib.mkOption {
+                  default = "./.";
+                  description = "Path of the top level flake";
+                  type = lib.types.str;
+                };
+              };
+            }
           ]
             modules;
           specialArgs = { inputattrs = allChannels; };

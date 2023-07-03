@@ -19,8 +19,7 @@
             else if builtins.isString newmod
             then tlib.resolveModule effectiveModulesPaths newmod
             else throw "Module type not recognized!");
-          instantiationconfig = lib.optionalAttrs (inputattrs ? instantiationdata)
-            (lib.importJSON (inputattrs.instantiationdata + "/config.json"));
+          instantiationconfig = inputattrs.instantiationdata.nixosConfig or { };
         in
         nixpkgs.lib.nixosSystem ({
           inherit system;

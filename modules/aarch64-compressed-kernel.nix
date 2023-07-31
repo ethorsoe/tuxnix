@@ -1,9 +1,16 @@
-{ lib, ... }: {
+{ lib, pkgs, ... }: {
   boot.kernelPatches = [
     {
-      name = "config";
+      name = "config-zboot-zstd";
       patch = null;
       extraStructuredConfig = { EFI_ZBOOT = lib.kernel.yes; KERNEL_ZSTD = lib.kernel.yes; };
+    }
+    {
+      name = "hexdump-from-nixos";
+      patch = pkgs.substituteAll {
+        src = ../lib/patches/zboot-hexdump-from-nixos.diff;
+        hexdumpFromNixos = "${pkgs.util-linux}/bin/hexdump";
+      };
     }
   ];
   nixpkgs.hostPlatform = {

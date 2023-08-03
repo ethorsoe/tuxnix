@@ -28,7 +28,7 @@
         flake="$(readlink -e ''${flake%%/flake.nix}/flake.nix | sed 's|/flake.nix$||' || true)"
         flake="''${flake:-$(readlink -e /etc/tuxnix/channels/self)}"
         ${lib.concatStrings listedInputs}
-        $sudo nixos-rebuild --flake "$flake" $defaults --no-write-lock-file "''${switch[@]}"
+        $sudo nixos-rebuild -v --flake "$flake" $defaults --no-write-lock-file "''${switch[@]}"
       '';
     in
     {

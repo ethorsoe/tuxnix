@@ -68,6 +68,10 @@
                   (old: mod: old ++ (tlib.resolveModule modulesPaths mod))
                   [ ]
                   containerConfig.modules;
+                boot = {
+                  kernelPackages = hostConfig.boot.kernelPackages;
+                  kernelPatches = hostConfig.boot.kernelPatches;
+                };
                 environment.etc."machine-id".enable = false;
                 networking.hostName = name;
                 # workaround no root login assertion

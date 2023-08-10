@@ -54,7 +54,6 @@
           ({ "/mnt/persist" = "persist"; } // params.extraMounts);
         config = { config, pkgs, lib, ... }@configArgs:
           let
-            modulesPaths = hostConfig.tuxnix.container.modulesPaths;
             containerConfig = import (hostConfig.tuxnix.container.configsDir + "/${name}.nix");
             baseConfig = containerConfig.config;
             effectiveBaseConfig =
@@ -64,10 +63,10 @@
             containerAutoConfig =
               assert !(effectiveBaseConfig ? imports);
               {
-                imports = builtins.foldl'
-                  (old: mod: old ++ (tlib.resolveModule modulesPaths mod))
-                  [ ]
-                  containerConfig.modules;
+                imports = tlib.handleSetDeps {
+                  inherit (hostConfig.tuxnix.container) modulesPaths sets;
+                  inputs = containerConfig.modules;
+                };
                 boot = {
                   kernelPackages = hostConfig.boot.kernelPackages;
                   kernelPatches = hostConfig.boot.kernelPatches;

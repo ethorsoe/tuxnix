@@ -5,6 +5,8 @@ lib:
   splitString = reg: s: builtins.filter (x: builtins.isString x && "" != x)
     (builtins.split reg s);
   lines = splitString "\n";
+  mapListToAttrs' = f: xs: builtins.listToAttrs (map f xs);
+  mapListToAttrs = f: mapListToAttrs' (name: { inherit name; value = f name; });
   unlines = x: builtins.concatStringsSep "\n" x;
   words = splitString "[[:space:]]";
   unwords = x: builtins.concatStringsSep " " x;

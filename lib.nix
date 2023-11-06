@@ -10,6 +10,16 @@ lib:
   unlines = x: builtins.concatStringsSep "\n" x;
   words = splitString "[[:space:]]";
   unwords = x: builtins.concatStringsSep " " x;
+  anyPathBaseName = path:
+    if (builtins.dirOf (toString path)) == "/nix/store"
+    then builtins.substring 33 1000 (builtins.baseNameOf path)
+    else builtins.baseNameOf path;
+  stringPathToStorePath = x:
+    if lib.hasPrefix "/nix/store/" x
+    then builtins.storePath x
+    else if lib.hasPrefix "/" x
+    then builtins.filterSource (p: t: true) (builtins.toPath (/. + "/${x}"))
+    else builtins.filterSource (p: t: true) (builtins.toPath (./. + "/${x}"));
   stripComment = x: builtins.head (builtins.split "#.*$" x);
   commentedFileToLines = path: builtins.filter
     (x: 0 != builtins.length (words x))

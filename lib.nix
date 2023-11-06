@@ -14,12 +14,13 @@ lib:
     if (builtins.dirOf (toString path)) == "/nix/store"
     then builtins.substring 33 1000 (builtins.baseNameOf path)
     else builtins.baseNameOf path;
-  stringPathToStorePath = x:
+  stringPathToStorePathPWD = stringPathToStorePath (builtins.getEnv "PWD");
+  stringPathToStorePath = relativeTo: x:
     if lib.hasPrefix "/nix/store/" x
     then builtins.storePath x
     else if lib.hasPrefix "/" x
     then builtins.filterSource (p: t: true) (builtins.toPath (/. + "/${x}"))
-    else builtins.filterSource (p: t: true) (builtins.toPath (./. + "/${x}"));
+    else builtins.filterSource (p: t: true) (builtins.toPath (relativeTo + "/${x}"));
   stripComment = x: builtins.head (builtins.split "#.*$" x);
   commentedFileToLines = path: builtins.filter
     (x: 0 != builtins.length (words x))

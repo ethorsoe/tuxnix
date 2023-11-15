@@ -2,40 +2,96 @@
 
 set -eu
 
-nixfiles="$(find . -iname '*.nix')"
-fail=""
-newFail=""
-knownFail="some text needed here to avoid match"
-
-for i in $nixfiles; do
-	if grep $'\t' $i; then
-		echo "$i has tabs"
-		fail+=" tabs_${i}"
-	fi
-	if egrep '.{101}' $i | grep -v 0; then
-		echo "$i has long lines"
-		fail+=" long_lines_${i}"
-	fi
-	if egrep ' $' $i | grep -v 0; then
-		echo "$i has trailing spaces"
-		fail+=" trailing_space_${i}"
-	fi
+nixfiles=()
+jsonfiles=()
+fail=0
+if (( 0 == $# )); then
+	readarray -d "" nixfiles < <(find . -type f -iname '*.nix' -print0)
+	readarray -d "" jsonfiles < <(find . -type f -iname '*.json' -print0)
+	readarray -d "" shfiles < <(find . -type f -iname '*.sh' -print0)
+fi
+while (( $# )); do
+	case "$1" in
+		*.nix)
+			nixfiles+=("$1")
+			;;
+		*.json)
+			jsonfiles+=("$1")
+			;;
+		*.sh)
+			shfiles+=("$1")
+			;;	esac
+	shift 1
 done
 
-for i in $fail; do
-	if ! echo "$i" | egrep -q "$knownFail"; then
-		newFail+=" $i"
+checkGrepPattern() {
+	local pattern="$1" errorType="$2"
+	shift 2
+	(( $# )) || return 1
+	local matches="$(grep "$pattern" "$@" || true)"
+	if [[ -n "$matches" ]]; then
+		echo "$errorType:" >&2
+		echo "$matches" >&2
+		return 0
 	fi
-done
-if [ "" != "$newFail" ]; then
-	echo $'\n'"New failures: $newFail"
-	exit 1
+	return 1
+}
+checkLongLines() {
+	checkGrepPattern '.\{101\}' "Long lines detected" "$@"
+}
+checkTabs() {
+	checkGrepPattern $'\t' "Tabs detected" "$@"
+}
+checkTrailingSpace() {
+	checkGrepPattern '[[:space:]]$' "Trailing space detected" "$@"
+}
+checkNixpkgsFmt() {
+	(( $# )) || return 1
+	local matches="$(nixpkgs-fmt --check "${nixfiles[@]}" |&
+		grep -v '^0 /' 2>&1 || true)"
+	if [[ -n "$matches" ]]; then
+		echo "nixpkgs-fmt would reformat:" >&2
+		echo "$matches" >&2
+		printf '%s\n' "nixfmt failed:" "$matches"
+		echo "try find . -name '*.nix' -exec nixpkgs-fmt '{}' +"
+		return 0
+	fi
+	return 1
+}
+checkJSON() {
+	local ret=1
+	for file in "$@"; do
+		if diff -u <(<"$file") <(jq . "$file"); then continue; fi
+		echo "${file@Q} not formatted with jq"
+		echo 'try jq . "${file@Q}" > temp && mv temp "$file"'
+		ret=0
+	done
+	return "$ret"
+}
+
+if checkTabs "${nixfiles[@]}"; then
+	(( ++fail ))
+fi
+if checkLongLines "${nixfiles[@]}"; then
+	(( ++fail ))
+fi
+if checkTrailingSpace "${nixfiles[@]}"; then
+	(( ++fail ))
+fi
+if checkNixpkgsFmt "${nixfiles[@]}"; then
+	(( ++fail ))
 fi
 
-nixfmtOut="$(find . -name '*.nix' -exec nixpkgs-fmt --check '{}' + |& grep -v '^0 /' 2>&1)" || true
-if [[ -n "$nixfmtOut" ]]; then
-	printf '%s\n' "nixfmt failed:" "$nixfmtOut"
-	echo "try find . -name '*.nix' -exec nixpkgs-fmt '{}' +"
+if checkJSON "${jsonfiles[@]}"; then
+	(( ++fail ))
+fi
+
+if checkTrailingSpace "${shfiles[@]}"; then
+	(( ++fail ))
+fi
+
+if (( fail )); then
+	echo "$fail failure categories detected."
 	exit 1
 fi
 exit 0

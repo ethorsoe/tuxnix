@@ -71,7 +71,11 @@
                   kernelPackages = hostConfig.boot.kernelPackages;
                   kernelPatches = hostConfig.boot.kernelPatches;
                 };
-                environment.etc."machine-id".enable = false;
+                environment.etc = {
+                  machine-id.enable = false;
+                } // lib.filterAttrs
+                  (n: v: lib.hasPrefix "tuxnix/channels/" n)
+                  hostConfig.environment.etc;
                 networking.hostName = name;
                 # workaround no root login assertion
                 users.users."root".openssh.authorizedKeys.keys = [ "" ];

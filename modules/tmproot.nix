@@ -80,9 +80,12 @@
         ${pkgs.sqlite.bin}/bin/sqlite3 /mnt-root/nix/var/nix/db/db.sqlite vacuum
       '';
     };
-    system.activationScripts.clear-profiles = lib.stringAfter [ "nix" ] ''
-      find /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/profiles/per-user/ -type l -delete
-      rm -f /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/gcroots/profiles /root/.nix-channels
-    '';
+    system.activationScripts.clear-profiles = lib.stringAfter
+      (lib.optional (lib.versionOlder lib.trivial.release "23.11") "nix")
+      ''
+        ! [[ -d /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/profiles/per-user ]] ||
+          find /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/profiles/per-user/ -type l -delete
+        rm -f /mnt/pool/${config.tuxnix.nixSubvol}/var/nix/gcroots/profiles /root/.nix-channels
+      '';
   };
 }

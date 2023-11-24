@@ -1,0 +1,3 @@
+kate: eol unix; remove-trailing-space on; replace-trailing-space-save on; word-wrap-column 100;
+kate-wildcard(*.nix;*.json;): indent-width 2; space-indent on; tab-width 2; replace-tabs on; replace-tabs-save on; tab-indents on;
+kate-wildcard(*.sh;): space-indent off;

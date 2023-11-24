@@ -2,7 +2,7 @@
   description = "tuxnix NixOS configuration generator";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-23.05";
+    nixpkgs.url = "file:///Please.provide.nixpkgs.as.input";
   };
 
   outputs = { nixpkgs, self, ... }@flakeInputs:

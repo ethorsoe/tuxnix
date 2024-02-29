@@ -65,6 +65,20 @@
                     };
                   };
                 }
+                {
+                  config.nix.registry = tlib.mapAttrs'
+                    (n: v: {
+                      name = "t-${n}";
+                      value = {
+                        to = {
+                          type = "path";
+                          path = v;
+                        };
+                      };
+                    })
+                    allChannels //
+                  { nixos.to = { type = "path"; path = nixpkgs; }; };
+                }
               ];
             };
           specialArgs = { inputattrs = allChannels; };

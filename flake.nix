@@ -68,7 +68,7 @@
                 {
                   config.nix.registry = tlib.mapAttrs'
                     (n: v: {
-                      name = "t-${n}";
+                      name = builtins.replaceStrings [ "." ] [ "-" ] "t-${n}";
                       value = {
                         to = {
                           type = "path";

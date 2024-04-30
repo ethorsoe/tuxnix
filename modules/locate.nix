@@ -17,6 +17,7 @@ in
       description = "Update tuxnix-locate database";
       path = with pkgs; [ util-linux wget ];
       after = [ "network-online.target" ];
+      requires = [ "network-online.target" ];
       script = ''
         set -eu
         shopt -s nullglob

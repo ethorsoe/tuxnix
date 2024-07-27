@@ -8,6 +8,7 @@
         "nixos-22.05" = "sha256-Zffu01pONhs/pqH07cjlF10NnMDLok8ix5Uk4rhOnZQ=";
         "nixos-22.11" = "sha256-lHrKvEkCPTUO+7tPfjIcb7Trk6k31rz18vkyqmkeJfY=";
         "nixos-23.05" = "sha256-LWvKHp7kGxk/GEtlrGYV68qIvPHkU9iToomNFGagixU=";
+        "nixos-23.11" = "sha256-zwVvxrdIzralnSbcpghA92tWu2DV2lwv89xZc8MTrbg=";
       };
       getDir = n: v: {
         name = "tuxnix/channels/${n}";

@@ -22,7 +22,7 @@ in
         set -eu
         shopt -s nullglob
         cd ${locateDir}
-        project='https://github.com/Mic92/nix-index-database'
+        project='https://github.com/nix-community/nix-index-database'
         wget -q -N "$project/releases/latest/download/index-x86_64-linux"
         ln -f index-x86_64-linux files
       '';

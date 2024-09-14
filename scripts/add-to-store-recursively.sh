@@ -53,4 +53,4 @@ if [[ -d "$outName" ]]; then
 	storeName="$(readlink -f "$stateDir/o")"
 	outName+="/$(basename "$storeName")"
 fi
-nix-store --add-root "$outName" -r "$storeName"
+nix-store --add-root "$outName" -r "$storeName" > /dev/null

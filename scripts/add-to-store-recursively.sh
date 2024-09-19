@@ -14,6 +14,13 @@ die() {
 	printf '%s\n' "$@" >&2
 	exit 1
 }
+jqEscape() {
+	if [[ "$1" =~ ^[a-zA-Z0-9/.-]+$ ]]; then
+		printf '"%s"' "$1"
+	else
+		printf "%s" "$linkTarget" | jq -s -R .
+	fi
+}
 
 if [[ 0 == "$#" ]]; then
 	die "usage $0 <dir> [output name] [build name]"
@@ -30,24 +37,31 @@ stateDir="$(mktemp -d)"
 
 cd "$saveDir"
 readarray -d "" links < <(find -type l -print0)
-args=()
-for i in "${links[@]}"; do
-	linkTarget="$(readlink -f "$i")"
+readarray -d "" linkTargets < <(printf '%s\0' "${links[@]}" | xargs -r -0 readlink -z --)
+[[ "${#links[@]}" == "${#linkTargets[@]}" ]]
+
+args="{"
+for (( i=0; i < ${#links[@]}; i++ )); do
+	link="${links[i]}"
+	linkTarget="${linkTargets[i]}"
 	[[ "$linkTarget" =~ /nix/store/.* ]] || continue
-	args+=(--argstr "$i" "$linkTarget")
+	args+=$'\n'"$(jqEscape "$link"): $(jqEscape "$linkTarget"),"
 done
+args="${args%,}"
+args+=$'\n'"}"$'\n'
 
 nix-build --expr '
-{ ... }@args:
+{ argsFile }:
 	let
 		pkgs = import <nixpkgs> {};
 		lib = pkgs.lib;
+		args = lib.importJSON (/. + argsFile);
 		listArgs = lib.mapAttrsToList (n: v: "rm $out/${lib.escapeShellArg n}; ln -sf ${builtins.storePath v} $out/${lib.escapeShellArg n}") args;
 	in pkgs.runCommand
 		"'"$buildName"'"
 		{}
 		"cp -r ${./.} $out; chmod -R u+w $out; ${builtins.concatStringsSep "\n" listArgs}"
-' "${args[@]}" --out-link "$stateDir/o"
+' --argstr argsFile <(printf '%s' "$args") --out-link "$stateDir/o"
 
 if [[ -d "$outName" ]]; then
 	storeName="$(readlink -f "$stateDir/o")"

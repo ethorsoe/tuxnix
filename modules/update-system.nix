@@ -40,6 +40,7 @@
         description = "tuxnix automatic update service";
         serviceConfig.Type = "oneshot";
         path = [ tuxnix-update-system ];
+        requires = [ "network-online.target" ];
         script = ''
           tuxnix-update-system ${config.tuxnix.autoUpdate.target}
         '';

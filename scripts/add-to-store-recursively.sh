@@ -57,7 +57,7 @@ nix-build --expr '
 		lib = pkgs.lib;
 		args = lib.importJSON (/. + argsFile);
 		listArgs = lib.mapAttrsToList (n: v: "rm $out/${lib.escapeShellArg n}; ln -sf ${builtins.storePath v} $out/${lib.escapeShellArg n}") args;
-	in pkgs.runCommand
+	in pkgs.runCommandLocal
 		"'"$buildName"'"
 		{}
 		"cp -r ${./.} $out; chmod -R u+w $out; ${builtins.concatStringsSep "\n" listArgs}"

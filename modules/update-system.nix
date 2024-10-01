@@ -18,7 +18,7 @@
           fi
         '')
         filteredInputs;
-      tuxnix-update-system = pkgs.writeScriptBin "tuxnix-update-system" ''
+      genTuxnixUpdateSystem = name: command: pkgs.writeScriptBin name ''
         #! ${pkgs.bash}/bin/bash -eux
         PATH+=":${lib.makeBinPath [ pkgs.nixos-rebuild ] }"
         switch=("''${@:-switch}")
@@ -28,11 +28,20 @@
         flake="$(readlink -e ''${flake%%/flake.nix}/flake.nix | sed 's|/flake.nix$||' || true)"
         flake="''${flake:-$(readlink -e /etc/tuxnix/channels/self)}"
         ${lib.concatStrings listedInputs}
+        ${command}
+      '';
+      tuxnix-update-system = genTuxnixUpdateSystem "tuxnix-update-system" ''
         $sudo nixos-rebuild -v --flake "$flake" $defaults --no-write-lock-file "''${switch[@]}"
       '';
+      tuxnix-install-system = genTuxnixUpdateSystem "tuxnix-install-system" ''
+        $sudo nixos-install -v --flake "$flake#''${switch[-1]}" $defaults --no-write-lock-file \
+          --no-root-password "''${switch[@]: 0: $((''${#switch[@]} - 1))}"
+      '';
+      tuxnix-installer = pkgs.writeScriptBin "tuxnix-installer"
+        (builtins.readFile ../scripts/install.sh);
     in
     {
-      environment.systemPackages = [ tuxnix-update-system ];
+      environment.systemPackages = [ tuxnix-install-system tuxnix-installer tuxnix-update-system ];
       nix.settings.sync-before-registering =
         lib.mkIf (null != config.tuxnix.autoUpdate.target) true;
       systemd.services.tuxnix-auto-update = lib.mkIf (null != config.tuxnix.autoUpdate.target) {

@@ -1,17 +1,25 @@
-{ pkgs, ... }:
+# deprecation plan
+# after 24.05 EOL add warning
+# after 24.11 EOL remove module
+{ lib, pkgs, ... }:
 let
-  keyDir = "/mnt/persist/root-ssh";
-  keyFile = "${keyDir}/id_ed25519";
+  oldKeyDir = "/mnt/persist/root-ssh";
+  oldKeyFile = "${oldKeyDir}/id_ed25519";
+  newKeyDir = "/mnt/persist/user-ssh";
+  newKeyFile = "${newKeyDir}/id_ed25519-root";
 in
 {
-  system.activationScripts.genRootED25519 = ''
-    if ! [[ -f "${keyFile}" ]]; then
-      mkdir -p "${keyDir}"
-      ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -b 4096 -N "" -f "${keyFile}" -q
-    fi
-  '';
-  systemd.tmpfiles.rules = [
-    "d /root/.ssh 0700 root root"
-    "L /root/.ssh/id_ed25519 - - - - ${keyFile}"
-  ];
+  imports = [ ./user-ssh.nix ];
+  config = {
+    system.activationScripts.genRootED25519 = ''
+      if ! [[ -f "${newKeyFile}" ]] && [[ -f ${oldKeyFile} ]]; then
+        mkdir -p ${newKeyDir}
+        mv ${oldKeyFile} ${newKeyFile}
+        mv ${oldKeyFile}.pub ${newKeyFile}.pub
+        [[ "$(readlink /root/.ssh/id_ed25519)" != ${oldKeyFile}  ]] || rm /root/.ssh/id_ed25519
+        rmdir ${oldKeyDir}
+      fi
+    '';
+    tuxnix.userSSHKeys.root = true;
+  };
 }

@@ -17,7 +17,8 @@
       serviceConfig = {
         DynamicUser = true;
         ExecStart = "${pkgs.openssh}/bin/ssh -i \${CREDENTIALS_DIRECTORY}/key" +
-          " -N -R ${builtins.toString config.tuxnix.sshPortForward.port}:localhost:22" +
+          " -N -o ExitOnForwardFailure=yes" +
+          " -R ${builtins.toString config.tuxnix.sshPortForward.port}:localhost:22" +
           " ${config.tuxnix.sshPortForward.username}@lohtuchai.dy.fi";
         LoadCredential = "key:/mnt/persist/user-ssh/id_ed25519-root";
         Restart = "always";

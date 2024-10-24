@@ -14,7 +14,7 @@
           rev = "6d1dcd20450ce18e025f0530a7ba75ca8222f695";
           sha256 = "sha256-mGzxv/WwtjekkKKm4v4f37g5/oKh3Bc8BIxXMO+jKro=";
         };
-        cargoSha256 = "sha256-RW2uanyQGzV33snLIOQx6wOW6e6fl+NkB97eDQK7KPQ=";
+        cargoHash = "sha256-RW2uanyQGzV33snLIOQx6wOW6e6fl+NkB97eDQK7KPQ=";
       };
       mkMetaBackupService = name: device: {
         name = "meta-backup-${name}";

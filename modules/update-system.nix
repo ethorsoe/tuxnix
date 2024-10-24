@@ -11,18 +11,25 @@
     let
       inputs = (import config.tuxnix.update-system.selfFlakeFilePath).inputs;
       filteredInputs = lib.filterAttrs (_: v: lib.hasPrefix "path:" v.url) inputs;
-      listedInputs = lib.mapAttrsToList
-        (n: v: ''
-          if [[ -z "$(readlink -e ${lib.removePrefix "path:" v.url} || true)" ]]; then
-            defaults+=" --override-input ${n} path:$(readlink -f /etc/tuxnix/channels/${n})"
+      listInput = n: v:
+        let
+          path = lib.removePrefix "path:" v.url;
+        in
+        ''
+          linkedPath="$(readlink -e ${path} || true)"
+          if [[ -z "$linkedPath" ]]; then
+            defaults+=(--override-input ${n} "path:$(readlink -f /etc/tuxnix/channels/${n})")
+          elif [[ "${path}" != "$linkedPath" ]]; then
+            defaults+=(--override-input ${n} "$linkedPath")
           fi
-        '')
-        filteredInputs;
+        '';
+      listedInputs = lib.mapAttrsToList listInput filteredInputs;
       genTuxnixUpdateSystem = name: command: pkgs.writeScriptBin name ''
         #! ${pkgs.bash}/bin/bash -eux
         PATH+=":${lib.makeBinPath [ pkgs.nixos-rebuild ] }"
         switch=("''${@:-switch}")
-        : ''${sudo=} ''${defaults=}
+        : ''${sudo=}
+        defaults=()
         [[ "$UID" == 0 ]] || sudo=sudo
         flake="${config.tuxnix.update-system.selfFlakePath}"
         flake="$(readlink -e ''${flake%%/flake.nix}/flake.nix | sed 's|/flake.nix$||' || true)"
@@ -31,11 +38,12 @@
         ${command}
       '';
       tuxnix-update-system = genTuxnixUpdateSystem "tuxnix-update-system" ''
-        $sudo nixos-rebuild -v --flake "$flake" $defaults --no-write-lock-file "''${switch[@]}"
+        $sudo nixos-rebuild -v --flake "$flake" "''${defaults[@]}" \
+          --no-write-lock-file "''${switch[@]}"
       '';
       tuxnix-install-system = genTuxnixUpdateSystem "tuxnix-install-system" ''
-        $sudo nixos-install -v --flake "$flake#''${switch[-1]}" $defaults --no-write-lock-file \
-          --no-root-password "''${switch[@]: 0: $((''${#switch[@]} - 1))}"
+        $sudo nixos-install -v --flake "$flake#''${switch[-1]}"  "''${defaults[@]}" \
+          --no-write-lock-file --no-root-password "''${switch[@]: 0: $((''${#switch[@]} - 1))}"
       '';
       tuxnix-installer = pkgs.writeScriptBin "tuxnix-installer"
         (builtins.readFile ../scripts/install.sh);

@@ -1,9 +1,8 @@
-# you can enable pipewire support in chromium with
-# enable-webrtc-pipewire-capturer in chrome://flags
+# Remember to export XDG_CURRENT_DESKTOP for d-bus environ
 { config, pkgs, lib, ... }: {
   xdg.portal = {
     enable = true;
-    gtkUsePortal = false;
-    extraPortals = with pkgs; [ xdg-desktop-portal-wlr ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    wlr.enable = true;
   };
 }

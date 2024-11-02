@@ -40,7 +40,7 @@
       mkContainer = name: params: {
         inherit (params) autoStart;
         allowedDevices = [{
-          modifier = "rw";
+          modifier = "rwm";
           node = "/dev/net/tun";
         }];
         bindMounts = lib.mapAttrs'

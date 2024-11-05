@@ -4,7 +4,7 @@ set -eu
 
 cleanup() {
 	if [[ -n "${stateDir:-}" ]]; then
-		rm -f -- "$stateDir/o"
+		rm -f -- "$stateDir/o" "$stateDir/args"
 		rmdir "$stateDir"
 	fi
 }
@@ -50,6 +50,7 @@ done
 args="${args%,}"
 args+=$'\n'"}"$'\n'
 
+printf '%s' "$args" > "$stateDir/args"
 nix-build --expr '
 { argsFile }:
 	let
@@ -61,10 +62,10 @@ nix-build --expr '
 		"'"$buildName"'"
 		{}
 		"cp -r ${./.} $out; chmod -R u+w $out; ${builtins.concatStringsSep "\n" listArgs}"
-' --argstr argsFile <(printf '%s' "$args") --out-link "$stateDir/o"
+' --argstr argsFile "$stateDir/args" --out-link "$stateDir/o"
 
+storeName="$(readlink -f "$stateDir/o")"
 if [[ -d "$outName" ]]; then
-	storeName="$(readlink -f "$stateDir/o")"
 	outName+="/$(basename "$storeName")"
 fi
 nix-store --add-root "$outName" -r "$storeName" > /dev/null

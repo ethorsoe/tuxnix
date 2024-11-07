@@ -13,8 +13,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "ethorsoe";
           repo = "backup-btrfs";
-          rev = "52750b8258962db73c376d38f7247d1673199a09";
-          sha256 = "sha256-rCieLhzlEriDVGRfnPz7d1Bynv6jF8j89O7CBPq/f9E=";
+          rev = "1148bcad677568dcc6fd4710628e417509a74632";
+          sha256 = "sha256-BDW5gN3TtJpT1xBA64tMN2K/sxewvdieNaGt0PNQqGs=";
         };
         dontStrip = true;
         installPhase = ''

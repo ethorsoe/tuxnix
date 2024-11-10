@@ -45,11 +45,18 @@
         $sudo nixos-install -v --flake "$flake#''${switch[-1]}"  "''${defaults[@]}" \
           --no-write-lock-file --no-root-password "''${switch[@]: 0: $((''${#switch[@]} - 1))}"
       '';
-      tuxnix-installer = pkgs.writeScriptBin "tuxnix-installer"
-        (builtins.readFile ../scripts/install.sh);
+      tuxnix-mount-installer = pkgs.writeScriptBin "tuxnix-mount-installer"
+        (builtins.readFile ../scripts/mount-install.sh);
+      tuxnix-format-installer = pkgs.writeScriptBin "tuxnix-format-installer"
+        (builtins.readFile ../scripts/format-install.sh);
     in
     {
-      environment.systemPackages = [ tuxnix-install-system tuxnix-installer tuxnix-update-system ];
+      environment.systemPackages = [
+        tuxnix-format-installer
+        tuxnix-install-system
+        tuxnix-mount-installer
+        tuxnix-update-system
+      ];
       nix.settings.sync-before-registering =
         lib.mkIf (null != config.tuxnix.autoUpdate.target) true;
       systemd.services.tuxnix-auto-update = lib.mkIf (null != config.tuxnix.autoUpdate.target) {

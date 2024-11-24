@@ -30,6 +30,7 @@
         switch=("''${@:-switch}")
         : ''${sudo=}
         defaults=()
+        ! tty > /dev/null || defaults+=(-v)
         [[ "$UID" == 0 ]] || sudo=sudo
         flake="${config.tuxnix.update-system.selfFlakePath}"
         flake="$(readlink -e ''${flake%%/flake.nix}/flake.nix | sed 's|/flake.nix$||' || true)"
@@ -38,11 +39,11 @@
         ${command}
       '';
       tuxnix-update-system = genTuxnixUpdateSystem "tuxnix-update-system" ''
-        $sudo nixos-rebuild -v --flake "$flake" "''${defaults[@]}" \
+        $sudo nixos-rebuild --flake "$flake" "''${defaults[@]}" \
           --no-write-lock-file "''${switch[@]}"
       '';
       tuxnix-install-system = genTuxnixUpdateSystem "tuxnix-install-system" ''
-        $sudo nixos-install -v --flake "$flake#''${switch[-1]}"  "''${defaults[@]}" \
+        $sudo nixos-install --flake "$flake#''${switch[-1]}"  "''${defaults[@]}" \
           --no-write-lock-file --no-root-password "''${switch[@]: 0: $((''${#switch[@]} - 1))}"
       '';
       tuxnix-mount-installer = pkgs.writeScriptBin "tuxnix-mount-installer"

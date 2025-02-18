@@ -37,6 +37,7 @@
     let
       tlib = import ../lib.nix lib;
       hostConfig = config;
+      hostPkgs = pkgs;
       mkContainer = name: params: {
         inherit (params) autoStart;
         allowedDevices = [{
@@ -67,6 +68,7 @@
                   inherit (hostConfig.tuxnix.container) modulesPaths sets;
                   inputs = containerConfig.modules;
                 };
+                nixpkgs.pkgs = lib.mkDefault hostPkgs;
                 boot = {
                   kernelPackages = hostConfig.boot.kernelPackages;
                   kernelPatches = hostConfig.boot.kernelPatches;

@@ -69,10 +69,7 @@
                   inputs = containerConfig.modules;
                 };
                 nixpkgs.pkgs = lib.mkDefault hostPkgs;
-                boot = {
-                  kernelPackages = hostConfig.boot.kernelPackages;
-                  kernelPatches = hostConfig.boot.kernelPatches;
-                };
+                boot.kernelPackages = hostConfig.boot.kernelPackages;
                 environment.etc = {
                   machine-id.enable = false;
                 } // lib.filterAttrs

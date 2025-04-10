@@ -35,7 +35,6 @@
   };
   config =
     let
-      tlib = import ../lib.nix lib;
       hostConfig = config;
       hostPkgs = pkgs;
       mkContainer = name: params: {
@@ -64,7 +63,7 @@
             containerAutoConfig =
               assert !(effectiveBaseConfig ? imports);
               {
-                imports = tlib.handleSetDeps {
+                imports = hostConfig.lib.tuxnix.handleSetDeps {
                   inherit (hostConfig.tuxnix.container) modulesPaths sets;
                   inputs = containerConfig.modules;
                 };
@@ -75,6 +74,7 @@
                 } // lib.filterAttrs
                   (n: v: lib.hasPrefix "tuxnix/channels/" n)
                   hostConfig.environment.etc;
+                lib.tuxnix = hostConfig.lib.tuxnix;
                 networking.hostName = name;
                 # workaround no root login assertion
                 users.users."root".openssh.authorizedKeys.keys = [ "" ];

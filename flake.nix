@@ -22,7 +22,7 @@
           effectiveModulesPaths = [ ./modules ] ++ modulesPaths;
           instantiationconfig = inputattrs.instantiationdata.nixosConfig or { };
         in
-        nixpkgs.lib.nixosSystem ({
+        lib.nixosSystem ({
           inherit system;
           modules = tlib.handleSetDeps
             {
@@ -35,6 +35,7 @@
                   environment.etc = nixpkgs.lib.mapAttrs'
                     (n: v: { name = "tuxnix/channels/${n}"; value = { source = v; }; })
                     allChannels;
+                  lib.tuxnix = tlib;
                   nix.nixPath = [ "/etc/tuxnix/channels" ];
                 }
                 {

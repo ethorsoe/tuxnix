@@ -6,7 +6,6 @@
 
   config.system.activationScripts.genUsersED25519 =
     let
-      tlib = import ../lib.nix lib;
       deps = [ "users" ] ++
         lib.optional (config.system.activationScripts ? genRootED25519) "genRootED25519";
       mapper = username: condition:
@@ -33,5 +32,6 @@
           fi
         '';
     in
-    lib.stringAfter deps (tlib.unlines (lib.mapAttrsToList mapper config.tuxnix.userSSHKeys));
+    lib.stringAfter deps
+      (config.lib.tuxnix.unlines (lib.mapAttrsToList mapper config.tuxnix.userSSHKeys));
 }

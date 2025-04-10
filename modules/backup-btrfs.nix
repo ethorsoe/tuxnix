@@ -5,7 +5,6 @@
   };
   config =
     let
-      tlib = import ../lib.nix lib;
       backupBtrfs = pkgs.stdenv.mkDerivation {
         name = "backup-btrfs";
         buildInputs = with pkgs; [ btrfs-progs ];
@@ -56,7 +55,7 @@
       systemd.services = lib.mapAttrs' mkBackupBtrfsService config.tuxnix.backupBtrfs;
       systemd.timers = lib.mapAttrs' mkBackupBtrfsTimer config.tuxnix.backupBtrfs;
       system.activationScripts.backupBtrfs = "mkdir -p ${
-      tlib.unwords (lib.attrsets.catAttrs "snapshotPath"
+      config.lib.tuxnix.unwords (lib.attrsets.catAttrs "snapshotPath"
         (lib.attrsets.attrValues config.tuxnix.backupBtrfs))}";
     };
 }

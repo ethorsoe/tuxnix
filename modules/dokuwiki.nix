@@ -16,7 +16,6 @@
       webserver = config.tuxnix.services.dokuwiki.webserver;
       sites = lib.mapAttrs
         (n: v: {
-          enable = true;
           stateDir = "/mnt/persist/dokuwiki/${n}/data";
           usersFile = "/mnt/persist/dokuwiki/${n}/users.auth.php";
         } // v)

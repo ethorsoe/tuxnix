@@ -58,7 +58,7 @@
         tuxnix-mount-installer
         tuxnix-update-system
       ];
-      nix.settings.sync-before-registering =
+      nix.settings.fsync-store-paths =
         lib.mkIf (null != config.tuxnix.autoUpdate.target) true;
       systemd.services.tuxnix-auto-update = lib.mkIf (null != config.tuxnix.autoUpdate.target) {
         after = [ "network-online.target" ];

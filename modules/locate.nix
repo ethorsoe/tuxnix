@@ -23,8 +23,13 @@ in
         shopt -s nullglob
         cd ${locateDir}
         project='https://github.com/nix-community/nix-index-database'
-        wget -q -N "$project/releases/latest/download/index-x86_64-linux"
+        wget -q -N "$project/releases/latest/download/index-x86_64-linux" || true
         ln -f index-x86_64-linux files
+        if (( $(printf "%(%s)T") - $(stat -c %Y ${locateDir}/index-x86_64-linux) >
+            (3600 * 24 * 15) )); then
+          echo "Database not updated for 15 days." >&2
+          exit 1
+        fi
       '';
       serviceConfig = {
         Type = "oneshot";

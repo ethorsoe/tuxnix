@@ -1,5 +1,17 @@
 { config, lib, pkgs, ... }: {
   options.tuxnix.autoUpdate = {
+    gcAfterGoodBoot = lib.mkOption {
+      description = "Run nix-collect-garbage -d ARG after automatic update, null to disable";
+      type = lib.types.nullOr lib.types.str;
+      example = "1d";
+      default = null;
+    };
+    gcAfterUpdate = lib.mkOption {
+      description = "Run nix-collect-garbage -d ARG after automatic update, null to disable";
+      type = lib.types.nullOr lib.types.str;
+      example = "25d";
+      default = null;
+    };
     target = lib.mkOption {
       description = "nixos-rebuild operation to run automatic update with, null to disable";
       type = with lib.types; nullOr str;
@@ -60,21 +72,58 @@
       ];
       nix.settings.fsync-store-paths =
         lib.mkIf (null != config.tuxnix.autoUpdate.target) true;
-      systemd.services.tuxnix-auto-update = lib.mkIf (null != config.tuxnix.autoUpdate.target) {
-        after = [ "network-online.target" ];
-        description = "tuxnix automatic update service";
-        serviceConfig.Type = "oneshot";
-        path = [ tuxnix-update-system ];
-        requires = [ "network-online.target" ];
-        script = ''
-          diff=$(( $(printf '%(%s)T') - $(stat -L -c %W /run/current-system) ))
-          if (( diff < 24 * 60* 60 )); then
-            echo "current-system only ''${diff}s old, skipping update"
-            exit 0
-          fi
-          tuxnix-update-system ${config.tuxnix.autoUpdate.target}
-        '';
-        wantedBy = [ "multi-user.target" ];
+      systemd = {
+        services = {
+          tuxnix-auto-update = lib.mkIf (null != config.tuxnix.autoUpdate.target) {
+            after = [ "network-online.target" ];
+            description = "tuxnix automatic update service";
+            serviceConfig.Type = "oneshot";
+            path = [ tuxnix-update-system pkgs.nix ];
+            requires = [ "network-online.target" ];
+            script = ''
+              diff=$(( $(printf '%(%s)T') - $(stat -L -c %W /run/current-system) ))
+              if (( diff < 24 * 60* 60 )); then
+                echo "current-system only ''${diff}s old, skipping update"
+                exit 0
+              fi
+              tuxnix-update-system ${config.tuxnix.autoUpdate.target}
+              ${lib.optionalString (null != config.tuxnix.autoUpdate.gcAfterUpdate)
+                "nix-collect-garbage --delete-older-than ${config.tuxnix.autoUpdate.gcAfterUpdate}"}
+            '';
+            wantedBy = [ "multi-user.target" ];
+          };
+          tuxnix-gc-after-good-boot = lib.mkIf (null != config.tuxnix.autoUpdate.gcAfterGoodBoot) {
+            description = "tuxnix gc after good boot";
+            serviceConfig.Type = "oneshot";
+            path = [ pkgs.nix pkgs.nixos-rebuild pkgs.jq ];
+            script = ''
+              #! /usr/bin/env -S bash -eu
+
+              generations=(
+                $(nixos-rebuild list-generations --json | jq -r '.[] | .generation' | sort -n)
+              )
+              bootedStore="$(realpath /run/booted-system)"
+              currentStore="$(realpath "/nix/var/nix/profiles/system")"
+              for gen in "''${generations[@]}"; do
+                genLink="/nix/var/nix/profiles/system-$gen-link"
+                genStore="$(realpath "$genLink")"
+                [[ "$bootedStore" != "$genStore" ]] || break
+                [[ "$currentStore" != "$genStore" ]] || break
+                rm "$genLink"
+              done
+              nix-collect-garbage
+            '';
+          };
+        };
+        timers.tuxnix-gc-after-good-boot =
+          lib.mkIf (null != config.tuxnix.autoUpdate.gcAfterGoodBoot) {
+            description = "tuxnix gc after good boot timer";
+            wantedBy = [ "multi-user.target" ];
+            timerConfig = {
+              OnBootSec = config.tuxnix.autoUpdate.gcAfterGoodBoot;
+              Unit = "tuxnix-gc-after-good-boot.service";
+            };
+          };
       };
     };
 }

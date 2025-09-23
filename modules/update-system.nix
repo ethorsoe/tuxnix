@@ -99,6 +99,10 @@
             script = ''
               #! /usr/bin/env -S bash -eu
 
+              if [[ -n "$(systemctl --output json --failed | jq -r '.[]')" ]]; then
+                systemctl --failed
+                exit 1
+              fi
               generations=(
                 $(nixos-rebuild list-generations --json | jq -r '.[] | .generation' | sort -n)
               )

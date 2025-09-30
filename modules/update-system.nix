@@ -82,7 +82,7 @@
             requires = [ "network-online.target" ];
             script = ''
               diff=$(( $(printf '%(%s)T') - $(stat -L -c %W /run/current-system) ))
-              if (( diff < 24 * 60* 60 )); then
+              if (( diff < 23 * 60 * 60 )); then
                 echo "current-system only ''${diff}s old, skipping update"
                 exit 0
               fi

@@ -32,7 +32,8 @@ if [[ "vfat" != "$(sudo blkid -s TYPE -o value "$bootfs")" ]]; then
 	die "$bootfs not of type 'vfat'" >&2
 fi
 
-runDir="$(mktemp --tmpdir -d "install-nixvmhost-run.XXXXXXXXXX")"
+mkdir -p /run/tuxnix/tmp
+runDir="$(mktemp --tmpdir=/run/tuxnix/tmp -d "install-nixvmhost-run.XXXXXXXXXX")"
 mnt="${runDir}/mnt"
 mkdir "$mnt"
 chmod -R 755 "$runDir"

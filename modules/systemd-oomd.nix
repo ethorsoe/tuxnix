@@ -10,7 +10,7 @@
         enableRootSlice = true;
         enableSystemSlice = true;
         enableUserSlices = true;
-        extraConfig.SwapUsedLimit = "${toString config.tuxnix.oomd.swapUsedLimit}%";
+        settings.OOM.SwapUsedLimit = "${toString config.tuxnix.oomd.swapUsedLimit}%";
       };
       services.systemd-oomd.after = [ "swap.target" ];
       slices = {

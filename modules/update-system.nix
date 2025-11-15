@@ -79,6 +79,8 @@
             description = "tuxnix automatic update service";
             serviceConfig.Type = "oneshot";
             path = [ tuxnix-update-system pkgs.nix ];
+            reloadIfChanged = false;
+            restartIfChanged = false;
             requires = [ "network-online.target" ];
             script = ''
               diff=$(( $(printf '%(%s)T') - $(stat -L -c %W /run/current-system) ))
@@ -91,6 +93,7 @@
                 "nix-collect-garbage --delete-older-than ${config.tuxnix.autoUpdate.gcAfterUpdate}"}
             '';
             wantedBy = [ "multi-user.target" ];
+            stopIfChanged = false;
           };
           tuxnix-gc-after-good-boot = lib.mkIf (null != config.tuxnix.autoUpdate.gcAfterGoodBoot) {
             description = "tuxnix gc after good boot";

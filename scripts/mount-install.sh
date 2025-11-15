@@ -80,5 +80,6 @@ cat > "$runDir/instantiationdata/flake.nix" << EOF
 EOF
 nixpkgs-fmt "$runDir/instantiationdata/flake.nix"
 
-tuxnix-install-system --root "$mnt" --override-input instantiationdata "$runDir/instantiationdata" \
+eatmydata tuxnix-install-system --root "$mnt" \
+	--override-input instantiationdata "$runDir/instantiationdata" \
 	"$@" "$hostname"

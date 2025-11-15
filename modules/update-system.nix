@@ -38,7 +38,7 @@
       listedInputs = lib.mapAttrsToList listInput filteredInputs;
       genTuxnixUpdateSystem = name: command: pkgs.writeScriptBin name ''
         #! ${pkgs.bash}/bin/bash -eux
-        PATH+=":${lib.makeBinPath [ pkgs.nixos-rebuild pkgs.openssh ] }"
+        PATH+=":${lib.makeBinPath [ pkgs.libeatmydata pkgs.nixos-rebuild pkgs.openssh ] }"
         switch=("''${@:-switch}")
         : ''${sudo=}
         defaults=()

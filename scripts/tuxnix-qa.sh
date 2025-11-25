@@ -61,7 +61,7 @@ checkNixpkgsFmt() {
 checkJSON() {
 	local ret=1
 	for file in "$@"; do
-		if diff -u <(<"$file") <(jq . "$file"); then continue; fi
+		if diff -u <(cat "$file") <(jq . "$file"); then continue; fi
 		echo "${file@Q} not formatted with jq"
 		echo 'try jq . "${file@Q}" > temp && mv temp "$file"'
 		ret=0

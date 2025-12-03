@@ -7,19 +7,19 @@
     let
       backup-btrfs = pkgs.stdenv.mkDerivation {
         name = "backup-btrfs";
-        buildInputs = with pkgs; [ btrfs-progs ];
+        buildInputs = [ pkgs.btrfs-progs pkgs.nushell ];
         unpackPhase = "true";
         src = pkgs.fetchFromGitHub {
           owner = "ethorsoe";
           repo = "backup-btrfs";
-          rev = "1148bcad677568dcc6fd4710628e417509a74632";
-          sha256 = "sha256-BDW5gN3TtJpT1xBA64tMN2K/sxewvdieNaGt0PNQqGs=";
+          rev = "27d13b5bb2cb7c12bb45e6b8209c600c8cfd1112";
+          sha256 = "sha256-CXPPpQYcL6TFYFu4IbaKVmphSPfNhiurbmx8P8OhVEA=";
         };
         dontStrip = true;
         installPhase = ''
           mkdir -p $out/bin
           gcc -O2 -Wall -Wextra -std=c11 $src/btrfs-gen.c  -o $out/bin/btrfs-gen
-          cp $src/backup-btrfs $src/sftp-upload $out/bin
+          cp $src/backup-btrfs $src/backup-btrfs-snapshot-cleanup $src/sftp-upload $out/bin
         '';
       };
       mkConfig = name: params: pkgs.writeText "backup-btrfs-${name}.conf"

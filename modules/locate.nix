@@ -3,13 +3,14 @@ let
   locateDir = "/mnt/persist/tuxnix-locate";
   tuxnixDB = "${locateDir}/db";
   locateUser = "tuxnix-locate";
+  tuxnix-locate = pkgs.writeScriptBin "tuxnix-locate" ''
+    #!${pkgs.bash}/bin/bash
+    exec ${pkgs.nix-index}/bin/nix-locate --db "${locateDir}" "$@"
+  '';
 in
 {
   environment.systemPackages = [
-    (pkgs.writeScriptBin "tuxnix-locate" ''
-      #!${pkgs.bash}/bin/bash
-      exec ${pkgs.nix-index}/bin/nix-locate --db "${locateDir}" "$@"
-    '')
+    tuxnix-locate
   ];
 
   systemd = {
@@ -42,6 +43,9 @@ in
       "d ${locateDir} 0755 ${locateUser} root"
       "Z ${locateDir} 0755 ${locateUser} root"
     ];
+  };
+  tuxnix.pkgs = {
+    inherit tuxnix-locate;
   };
   users = {
     groups.tuxnix-locate = { };

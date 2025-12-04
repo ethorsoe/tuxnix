@@ -5,7 +5,7 @@
   };
   config =
     let
-      backupBtrfs = pkgs.stdenv.mkDerivation {
+      backup-btrfs = pkgs.stdenv.mkDerivation {
         name = "backup-btrfs";
         buildInputs = with pkgs; [ btrfs-progs ];
         unpackPhase = "true";
@@ -29,7 +29,7 @@
         value = {
           description = "Snapshot btrfs filesystem service";
           path = with pkgs;
-            [ bash backupBtrfs btrfs-progs lzop nettools openssh perl util-linux which xz zstd ];
+            [ bash backup-btrfs btrfs-progs lzop nettools openssh perl util-linux which xz zstd ];
           script = ''
             mkdir -p /mnt/persist/backup-btrfs
             ln -sf /mnt/persist/backup-btrfs /var/cache/
@@ -57,5 +57,8 @@
       system.activationScripts.backupBtrfs = "mkdir -p ${
       config.lib.tuxnix.unwords (lib.attrsets.catAttrs "snapshotPath"
         (lib.attrsets.attrValues config.tuxnix.backupBtrfs))}";
+      tuxnix.pkgs = {
+        inherit backup-btrfs;
+      };
     };
 }

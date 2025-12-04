@@ -132,5 +132,9 @@
             };
           };
       };
+      tuxnix.pkgs = {
+        inherit tuxnix-format-installer tuxnix-install-system
+          tuxnix-mount-installer tuxnix-update-system;
+      };
     };
 }

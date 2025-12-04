@@ -6,7 +6,7 @@
   imports = [ ./backup-btrfs.nix ];
   config =
     let
-      inplaceCopy = pkgs.rustPlatform.buildRustPackage {
+      inplace-copy = pkgs.rustPlatform.buildRustPackage {
         name = "inplace-copy";
         src = pkgs.fetchFromGitHub {
           owner = "ethorsoe";
@@ -24,7 +24,7 @@
         value = {
           description = "Snapshot block device service";
           path = with pkgs;
-            [ inplaceCopy ];
+            [ inplace-copy ];
           script = ''
             set -eux
             mb="/mnt/pool/meta-backup"
@@ -65,5 +65,8 @@
     {
       systemd.services = lib.mapAttrs' mkMetaBackupService config.tuxnix.metaBackup;
       systemd.timers = lib.mapAttrs' mkMetaBackupTimer config.tuxnix.metaBackup;
+      tuxnix.pkgs = {
+        inherit inplace-copy;
+      };
     };
 }

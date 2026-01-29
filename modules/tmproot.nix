@@ -62,7 +62,7 @@
     fileSystems."/boot" = {
       device = "/dev/disk/by-uuid/${config.tuxnix.bootUUID}";
       fsType = "vfat";
-      options = [ "fmask=0077" ];
+      options = [ "umask=0077" ];
     };
 
     boot.initrd = {

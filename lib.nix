@@ -5,6 +5,7 @@ lib:
   splitString = reg: s: builtins.filter (x: builtins.isString x && "" != x)
     (builtins.split reg s);
   lines = splitString "\n";
+  isPureEval = !(builtins ? currentTime);
   mapListToAttrs' = f: xs: builtins.listToAttrs (map f xs);
   mapListToAttrs = f: mapListToAttrs' (name: { inherit name; value = f name; });
   unlines = x: builtins.concatStringsSep "\n" x;
